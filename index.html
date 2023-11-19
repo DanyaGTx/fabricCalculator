@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Просчёт стоимости тканей</title>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/vuetify@3.4.2/dist/vuetify.min.css"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.4.2/dist/vuetify.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div class="container">
+        <div class="tabs">
+          <h2
+            class="tab__text"
+            @click="switchTab(tabs.calculator)"
+            :class="{ 'activeTab': currentTab === tabs.calculator}"
+          >
+            Просчёт тканей
+          </h2>
+          <h2
+            class="tab__text"
+            :class="{ 'activeTab': currentTab === tabs.tax}"
+            @click="switchTab(tabs.tax)"
+          >
+            Просчёт налога
+          </h2>
+        </div>
+        <div v-if="currentTab === tabs.calculator">
+          <div class="tab">
+            <h1 class="tab__title">Калькулятор просчёта ткани</h1>
+            <div class="tab__input">
+              <v-text-field
+                label="Цена за 1 метр ткани (euro)"
+                hide-details="auto"
+                v-model="fabricPrice"
+              ></v-text-field>
+            </div>
+            <div class="tab__input">
+              <v-text-field
+                label="Сколько см ткани было использовано?"
+                hide-details="auto"
+                v-model="fabricLength"
+              ></v-text-field>
+            </div>
+
+            <div v-show="fabricLength * fabricPrice">
+              <p class="tab__price">
+                Цена:
+                <strong>{{ formattedResultFabricPrice }} euro</strong> за {{
+                fabricLength }} см ткани
+              </p>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="currentTab === tabs.tax">
+          <div class="tab">
+            <h1 class="tab__title">Калькулятор налога</h1>
+            <div class="tab__input">
+              <v-text-field
+                label="Введите доход (евро)"
+                hide-details="auto"
+                v-model="incomeValue"
+              ></v-text-field>
+            </div>
+            <div class="tab__input">
+              <v-text-field
+                label="Введите процент"
+                hide-details="auto"
+                v-model="taxValue"
+              ></v-text-field>
+            </div>
+
+            <div v-show="incomeValue * taxValue">
+              <p class="tab__price">
+                Налог состовляет:
+                <strong>{{ formattedResultTaxPrice }} euro</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const { createApp, ref, computed } = Vue;
+      const { createVuetify } = Vuetify;
+
+      const vuetify = createVuetify();
+      const app = createApp({
+        setup() {
+          const tabs = {
+            calculator: "calculator",
+            tax: "tax",
+          };
+          const currentTab = ref(tabs.calculator);
+          const fabricLength = ref(null);
+          const fabricPrice = ref(null);
+
+          const incomeValue = ref(null);
+          const taxValue = ref(null);
+
+          const resultFabricPrice = computed(() => {
+            return (fabricLength.value * fabricPrice.value) / 100;
+          });
+
+          const formattedResultFabricPrice = computed(() => {
+            const fabricResultValue = (
+              (fabricLength.value * fabricPrice.value) /
+              100
+            ).toFixed(2);
+            return String(fabricResultValue).replace(".", ",");
+          });
+
+          const formattedResultTaxPrice = computed(() => {
+            const taxResultValue = (
+              (incomeValue.value * taxValue.value) /
+              100
+            ).toFixed(2);
+            return String(taxResultValue).replace(".", ",");
+          });
+
+          const switchTab = (tab) => {
+            currentTab.value = tab;
+          };
+
+          return {
+            fabricLength,
+            fabricPrice,
+            resultFabricPrice,
+            formattedResultFabricPrice,
+            formattedResultTaxPrice,
+            currentTab,
+            switchTab,
+            tabs,
+            incomeValue,
+            taxValue,
+          };
+        },
+      });
+      app.use(vuetify).mount("#app");
+    </script>
+  </body>
+</html>
